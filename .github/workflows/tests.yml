@@ -3,6 +3,11 @@ name: tests
 on:
   push:
   pull_request:
+  schedule:
+    # Weekly fresh-install run: catches new upstream releases breaking the
+    # install even when no code is changing. (GitHub pauses scheduled runs
+    # after ~60 days without repo activity; any commit re-enables them.)
+    - cron: "0 6 * * 1"
 
 jobs:
   signal-tests:
@@ -35,4 +40,16 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: python -m pytest -v
+
+  lock-file:
+    name: known-good lock file still works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
+      - run: pip install -r requirements-lock.txt -r requirements-dev.txt
       - run: python -m pytest -v

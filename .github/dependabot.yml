@@ -1,0 +1,13 @@
+# Dependabot opens a pull request when a dependency releases a new
+# version; CI then tests that PR on all platforms. Merging it is how the
+# version caps in requirements.txt get bumped safely.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

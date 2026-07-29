@@ -23,6 +23,15 @@ green-channel baseline, `e` for the pulse-magnification view, `q` to quit.
 > **This is a tech demo, not a medical device** — see
 > [Limitations](#limitations--please-read).
 
+## Privacy
+
+**Everything runs locally on your machine.** No video, images, or data of
+any kind are uploaded or sent anywhere — the camera feed is processed in
+memory and never written to disk. The only network access ever made is a
+one-time download *from* Google's servers of the face-landmark model file
+(~3.7 MB) on first run; nothing is sent with that request beyond the
+download itself, and the app works offline without it.
+
 This is **remote photoplethysmography (rPPG)**: every heartbeat pushes a
 pulse of blood through the capillaries just under your skin, which very
 slightly changes the skin's colour. A webcam can pick up that tiny,
@@ -118,6 +127,10 @@ heart-rate number never depends on it.
 not work; on a brand-new Python release, prebuilt wheels for
 numpy/scipy/OpenCV may lag for a few weeks — if `pip install` fails there,
 use the previous Python version.)
+
+If a normal install ever breaks due to a new dependency release, install
+the known-good pinned versions instead:
+`pip install -r requirements-lock.txt` (Python 3.9–3.12).
 
 macOS / Linux:
 
