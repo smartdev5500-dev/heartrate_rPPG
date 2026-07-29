@@ -44,6 +44,9 @@ RESAMPLE_FS = 30.0
 MIN_SECONDS_TO_ESTIMATE = 5.0
 # Below this SNR the BPM is greyed out and shown as "acquiring...".
 SNR_ACQUIRE_THRESHOLD_DB = 3.0
+# How often to recompute the estimate (it changes slowly; every frame is
+# wasted CPU that lowers the capture frame rate).
+ESTIMATE_INTERVAL_S = 0.25
 
 
 def parse_args() -> argparse.Namespace:
@@ -83,6 +86,7 @@ def main() -> None:
 
     fps_ema = 0.0
     last_frame_t = None
+    last_estimate_t = -float("inf")
 
     try:
         cam = Webcam(args.camera, args.width, args.height)
@@ -115,11 +119,11 @@ def main() -> None:
             roi = tracker.process(frame, timestamp_ms=int(t * 1000.0))
             if roi.found and roi.rgb is not None:
                 buffer.append(t, roi.rgb)
-                draw_roi(frame, roi.polygons, active=True)
-            elif roi.polygons:
-                draw_roi(frame, roi.polygons, active=False)
 
             # Optional Eulerian magnification overlaid on the face box.
+            # Applied BEFORE the ROI outlines are drawn, so the magnifier
+            # only ever sees clean skin — drawn overlays would otherwise be
+            # amplified into coloured ghost artifacts.
             if show_magnify and roi.face_box is not None:
                 x, y, w, h = roi.face_box
                 x, y = max(x, 0), max(y, 0)
@@ -129,12 +133,23 @@ def main() -> None:
                     patch = frame[y : y + h, x : x + w]
                     frame[y : y + h, x : x + w] = magnifier.process(patch)
 
-            # Estimate heart rate once we have enough signal.
+            if roi.polygons:
+                draw_roi(frame, roi.polygons, active=roi.found)
+
+            # Estimate heart rate once we have enough signal. The estimate
+            # only meaningfully changes as new samples span the buffer, so
+            # recompute a few times a second instead of every frame — the
+            # saved CPU goes to capture/tracking frame rate.
             acquiring = True
             bpm = 0.0
             snr_db = -np.inf
             confidence = 0.0
-            if buffer.duration() >= MIN_SECONDS_TO_ESTIMATE and len(buffer) >= 32:
+            if (
+                buffer.duration() >= MIN_SECONDS_TO_ESTIMATE
+                and len(buffer) >= 32
+                and t - last_estimate_t >= ESTIMATE_INTERVAL_S
+            ):
+                last_estimate_t = t
                 ts, rgb = buffer.arrays()
                 try:
                     estimate, wave = process_buffer(
