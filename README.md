@@ -7,11 +7,13 @@ Read your pulse from a plain webcam — no contact sensors, just the camera.
 ```bash
 git clone https://github.com/rt9pdm2vsw-glitch/HeartRate.git
 cd HeartRate
-python3 -m venv .venv
+python3 -m venv .venv            # Windows: py -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
+
+Needs Python 3.9–3.13 — see [Install](#install) for platform specifics.
 
 Face the camera in steady light, hold still for ~5–10 seconds, and your
 heart rate appears. Press `m` to switch between the POS algorithm and the
@@ -112,13 +114,42 @@ heart-rate number never depends on it.
 
 ## Install
 
-Python 3.9+ recommended.
+**Requirements: Python 3.9–3.13** and a webcam. (Python 3.8 and older will
+not work; on a brand-new Python release, prebuilt wheels for
+numpy/scipy/OpenCV may lag for a few weeks — if `pip install` fails there,
+use the previous Python version.)
+
+macOS / Linux:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+Windows (use `py` or `python` — there is no `python3` command):
+
+```powershell
+py -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Platform notes:
+
+- **macOS** — allow camera access when the OS asks (the app waits up to
+  15 s for you to click Allow). If you denied it once: System Settings →
+  Privacy & Security → Camera → enable your terminal app. If an iPhone
+  (Continuity Camera) grabs camera index 0, use `--camera 1`.
+- **Windows** — if the camera won't open, check Settings → Privacy &
+  security → Camera → "Let desktop apps access your camera".
+- **Linux** — needs a desktop session (an OpenCV window is shown). If
+  `import cv2` fails with a `libGL` error on a minimal install:
+  `sudo apt install libgl1 libglib2.0-0`. Your user may need to be in the
+  `video` group to read `/dev/video0`.
+- **Offline / firewalled networks** — the MediaPipe model download is
+  skipped and the app automatically uses the built-in OpenCV Haar tracker
+  instead; everything still works.
 
 If `mediapipe` fails to install on your platform, the app still runs — it
 automatically uses the OpenCV Haar fallback. You can also force it with

@@ -16,7 +16,16 @@ Keys:
 from __future__ import annotations
 
 import argparse
+import sys
 import time
+
+if sys.version_info < (3, 9):
+    raise SystemExit(
+        f"This app needs Python 3.9 or newer; you are running "
+        f"{sys.version_info.major}.{sys.version_info.minor}. "
+        "Install a current Python from https://python.org and re-create the "
+        "virtual environment."
+    )
 
 import cv2
 import numpy as np

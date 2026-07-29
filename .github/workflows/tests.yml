@@ -6,11 +6,11 @@ on:
 
 jobs:
   signal-tests:
-    name: signal math (no vision deps)
+    name: signal math (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,14 +20,19 @@ jobs:
       - run: python -m pytest tests/test_signal_processing.py -v
 
   full-tests:
-    name: full suite (OpenCV + MediaPipe)
-    runs-on: ubuntu-latest
+    name: full suite (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: System libs for OpenCV
+      - name: System libs for OpenCV (Linux only)
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: python -m pytest -v
