@@ -1,0 +1,7 @@
+numpy>=1.23
+scipy>=1.9
+opencv-python>=4.7
+# MediaPipe is preferred for face-mesh ROI tracking. If it will not install
+# on your platform/Python version, the app automatically falls back to
+# OpenCV's Haar cascade face detector.
+mediapipe>=0.10 ; python_version < "3.13"
