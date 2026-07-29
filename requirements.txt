@@ -1,7 +1,8 @@
 numpy>=1.23
 scipy>=1.9
 opencv-python>=4.7
-# MediaPipe is preferred for face-mesh ROI tracking. If it will not install
-# on your platform/Python version, the app automatically falls back to
-# OpenCV's Haar cascade face detector.
-mediapipe>=0.10 ; python_version < "3.13"
+# MediaPipe >= 1.0 uses the Tasks API (face landmark model auto-downloads
+# on first run, ~3.7 MB, cached in ~/.cache/rppg-heartrate). Older 0.10.x
+# installs use the legacy FaceMesh API; both are supported. If MediaPipe is
+# missing entirely, the app falls back to OpenCV's Haar face detector.
+mediapipe>=0.10

@@ -96,7 +96,7 @@ def main() -> None:
                     fps_ema = inst if fps_ema == 0 else 0.9 * fps_ema + 0.1 * inst
             last_frame_t = t
 
-            roi = tracker.process(frame)
+            roi = tracker.process(frame, timestamp_ms=int(t * 1000.0))
             if roi.found and roi.rgb is not None:
                 buffer.append(t, roi.rgb)
                 draw_roi(frame, roi.polygons, active=True)

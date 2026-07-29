@@ -66,11 +66,14 @@ heart-rate number never depends on it.
    `time.perf_counter()`. Real webcams do **not** deliver a steady 30 fps;
    assuming a fixed rate biases the frequency estimate, so we record the
    true time of every frame.
-2. **Face + ROI.** MediaPipe Face Mesh tracks the face; we sample the
+2. **Face + ROI.** MediaPipe tracks the face mesh; we sample the
    **forehead and both cheeks** (well-perfused, usually-exposed skin) and
-   average the pixels inside to get one `(R, G, B)` per frame. If MediaPipe
-   can't be installed, we fall back to OpenCV's Haar face detector with a
-   fixed forehead box.
+   average the pixels inside to get one `(R, G, B)` per frame. Both the
+   modern MediaPipe Tasks API (≥ 1.0) and the legacy FaceMesh API (0.10.x)
+   are supported — with ≥ 1.0 the ~3.7 MB landmark model auto-downloads on
+   first run and is cached. If MediaPipe can't be installed at all, we fall
+   back to OpenCV's Haar face detector with a fixed forehead box (the
+   cascade file is vendored, since OpenCV 5 wheels no longer bundle it).
 3. **Rolling buffer.** Keep the last ~10 seconds of `(t, R, G, B)`.
 4. **Resample.** Interpolate the irregularly-timed samples onto a uniform
    30 Hz grid so the jittery frame timing doesn't corrupt the FFT.
@@ -101,6 +104,12 @@ pip install -r requirements.txt
 If `mediapipe` fails to install on your platform, the app still runs — it
 automatically uses the OpenCV Haar fallback. You can also force it with
 `--no-mediapipe`.
+
+**First run with MediaPipe ≥ 1.0:** the face-landmark model
+(`face_landmarker.task`, ~3.7 MB) is downloaded once from Google's model
+hosting and cached in `~/.cache/rppg-heartrate/` (override with
+`RPPG_CACHE_DIR`). If the download fails (offline), the app falls back to
+the Haar tracker, which needs no download.
 
 ## Run
 
@@ -146,13 +155,22 @@ and a small SNR/confidence bar.
 
 ## Tests
 
-The signal-processing math is covered by unit tests that need **no camera**
-— they feed synthetic RGB signals with a known pulse frequency through the
-estimator and assert the recovered BPM is within ±2 bpm.
+Two layers, neither needing a camera:
+
+- **Signal-processing unit tests** (`tests/test_signal_processing.py`) —
+  synthetic RGB signals with a known pulse frequency go through the
+  estimator; the recovered BPM must be within ±2 bpm. Needs only
+  numpy/scipy/pytest.
+- **Vision integration tests** (`tests/test_integration_vision.py`) — a
+  synthetic pulsing "video" built from a real face photo runs through the
+  *actual* face trackers, rolling buffer, and estimator end-to-end, and
+  must also recover the pulse within ±2 bpm. These skip automatically if
+  OpenCV/MediaPipe or the network are unavailable.
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt   # minimal: signal tests only
 python -m pytest
+# with the full requirements.txt installed, the integration tests run too
 ```
 
 ---
@@ -186,12 +204,15 @@ is still only as good as your lighting and stillness.
 main.py                     desktop app: capture -> ROI -> estimate -> UI
 rppg/
   signal_processing.py      pure numpy/scipy core (resample, POS, FFT, SNR)
-  roi.py                    MediaPipe Face Mesh ROI + OpenCV Haar fallback
+  roi.py                    MediaPipe (Tasks + legacy) ROI, OpenCV Haar fallback
+  assets.py                 model download/cache + vendored cascade lookup
   capture.py                webcam wrapper + rolling (t, RGB) buffer
   ui.py                     self-drawn OpenCV panel + scrolling waveform
   eulerian.py               stretch: real-time Eulerian magnification view
+  data/                     vendored Haar cascade (OpenCV project, Apache-2.0)
 tests/
-  test_signal_processing.py synthetic, camera-free correctness tests
+  test_signal_processing.py synthetic, camera-free math correctness tests
+  test_integration_vision.py end-to-end tracker+pipeline tests (no camera)
 ```
 
 The signal-processing core has no camera/OpenCV/MediaPipe dependency, so
