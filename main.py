@@ -75,9 +75,16 @@ def main() -> None:
     fps_ema = 0.0
     last_frame_t = None
 
+    try:
+        cam = Webcam(args.camera, args.width, args.height)
+    except RuntimeError as exc:
+        tracker.close()
+        print(f"[error] {exc}")
+        raise SystemExit(1) from None
+
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
 
-    with Webcam(args.camera, args.width, args.height) as cam:
+    with cam:
         while True:
             grabbed = cam.read()
             if grabbed is None:

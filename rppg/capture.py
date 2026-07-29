@@ -56,9 +56,28 @@ class Webcam:
         import cv2
 
         self._cv2 = cv2
+        # On macOS the first-ever run triggers the OS camera-permission
+        # dialog, and the very first open attempt fails while it is shown.
+        # Retry for a while so clicking "Allow" lets this run succeed
+        # instead of forcing a restart.
         self._cap = cv2.VideoCapture(index)
         if not self._cap.isOpened():
-            raise RuntimeError(f"could not open webcam at index {index}")
+            print(
+                "[info] webcam not available yet - if the OS is asking for "
+                "camera permission, click Allow (retrying for 15 s)..."
+            )
+            deadline = time.monotonic() + 15.0
+            while not self._cap.isOpened() and time.monotonic() < deadline:
+                time.sleep(1.0)
+                self._cap.release()
+                self._cap = cv2.VideoCapture(index)
+        if not self._cap.isOpened():
+            raise RuntimeError(
+                f"could not open webcam at index {index}. If this is macOS, "
+                "grant camera access in System Settings > Privacy & Security "
+                "> Camera (enable your terminal app), then run again. "
+                "A different camera can be selected with --camera N."
+            )
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
