@@ -120,10 +120,15 @@ def main() -> None:
             if roi.found and roi.rgb is not None:
                 buffer.append(t, roi.rgb)
 
+            if roi.polygons:
+                draw_roi(frame, roi.polygons, active=roi.found)
+
             # Optional Eulerian magnification overlaid on the face box.
-            # Applied BEFORE the ROI outlines are drawn, so the magnifier
-            # only ever sees clean skin — drawn overlays would otherwise be
-            # amplified into coloured ghost artifacts.
+            # Deliberately applied AFTER the ROI outlines are drawn: the
+            # magnifier amplifying the drawn overlay produces a vivid
+            # psychedelic effect that makes the mode visually distinct and
+            # fun to toggle. (Signal quality is unaffected — the ROI colour
+            # is sampled from the clean frame before any drawing.)
             if show_magnify and roi.face_box is not None:
                 x, y, w, h = roi.face_box
                 x, y = max(x, 0), max(y, 0)
@@ -132,9 +137,6 @@ def main() -> None:
                 if w > 10 and h > 10:
                     patch = frame[y : y + h, x : x + w]
                     frame[y : y + h, x : x + w] = magnifier.process(patch)
-
-            if roi.polygons:
-                draw_roi(frame, roi.polygons, active=roi.found)
 
             # Estimate heart rate once we have enough signal. The estimate
             # only meaningfully changes as new samples span the buffer, so
