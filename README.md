@@ -2,6 +2,25 @@
 
 Read your pulse from a plain webcam — no contact sensors, just the camera.
 
+## Quick start
+
+```bash
+git clone https://github.com/rt9pdm2vsw-glitch/HeartRate.git
+cd HeartRate
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+```
+
+Face the camera in steady light, hold still for ~5–10 seconds, and your
+heart rate appears. Press `m` to switch between the POS algorithm and the
+green-channel baseline, `e` for the pulse-magnification view, `q` to quit.
+
+> On macOS, allow camera access when prompted (the app waits for you).
+> **This is a tech demo, not a medical device** — see
+> [Limitations](#limitations--please-read).
+
 This is **remote photoplethysmography (rPPG)**: every heartbeat pushes a
 pulse of blood through the capillaries just under your skin, which very
 slightly changes the skin's colour. A webcam can pick up that tiny,
@@ -217,3 +236,9 @@ tests/
 
 The signal-processing core has no camera/OpenCV/MediaPipe dependency, so
 the math is testable and portable on its own.
+
+## License
+
+MIT — see [LICENSE](LICENSE). The vendored Haar cascade is from the
+OpenCV project (Apache-2.0). The MediaPipe face-landmark model downloaded
+at first run is provided by Google under its own terms.
