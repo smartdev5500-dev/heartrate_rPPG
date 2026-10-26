@@ -2,7 +2,7 @@
 # 1.0 API removal, or OpenCV 5 dropping bundled cascades) from silently
 # breaking fresh installs. Bump a cap only after CI passes against the new
 # major. If an install breaks anyway, use requirements-lock.txt instead.
-numpy>=1.23,<3
+numpy>=2.5.4,<3
 scipy>=1.9,<2
 opencv-python>=4.7,<6
 # MediaPipe >= 1.0 uses the Tasks API (face landmark model auto-downloads
