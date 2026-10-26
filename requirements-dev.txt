@@ -1,5 +1,5 @@
 # Development / CI dependencies. The signal-processing tests need only
 # numpy + scipy + pytest (no camera, OpenCV, or MediaPipe required).
-numpy>=1.23
+numpy>=2.5.4
 scipy>=1.9
 pytest>=7.0
