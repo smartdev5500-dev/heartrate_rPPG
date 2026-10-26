@@ -9,4 +9,4 @@ opencv-python>=4.7,<6
 # on first run, ~3.7 MB, cached in ~/.cache/rppg-heartrate). Older 0.10.x
 # installs use the legacy FaceMesh API; both are supported. If MediaPipe is
 # missing entirely, the app falls back to OpenCV's Haar face detector.
-mediapipe>=0.10,<2
+mediapipe>=1.1.1,<2
