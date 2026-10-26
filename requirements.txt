@@ -3,7 +3,7 @@
 # breaking fresh installs. Bump a cap only after CI passes against the new
 # major. If an install breaks anyway, use requirements-lock.txt instead.
 numpy>=1.23,<3
-scipy>=1.9,<2
+scipy>=1.18.1,<2
 opencv-python>=4.7,<6
 # MediaPipe >= 1.0 uses the Tasks API (face landmark model auto-downloads
 # on first run, ~3.7 MB, cached in ~/.cache/rppg-heartrate). Older 0.10.x
