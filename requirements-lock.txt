@@ -8,6 +8,6 @@
 # 3.9-3.12; on Python 3.13 use requirements.txt, since numpy 2.0.x has no
 # 3.13 wheels.
 numpy==2.0.2
-scipy==1.13.1
+scipy==1.18.1
 opencv-python==5.0.0.93
 mediapipe==1.0.0
